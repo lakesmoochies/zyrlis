@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Your Shopping Cart</title>
+    <meta charset="utf-8" />
+    <style>
+      /* General Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f7f7f7;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      #site {
+        width: 90%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header#masthead {
+        text-align: center;
+        padding: 10px 0;
+      }
+
+      header#masthead h1 {
+        font-size: 36px;
+        color: #454b63;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      #content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      #content h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+      }
+
+      .shopping-cart {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+
+      .shopping-cart th,
+      .shopping-cart td {
+        padding: 10px;
+        text-align: left;
+      }
+
+      .shopping-cart th {
+        background-color: #454b63;
+        color: white;
+      }
+
+      .shopping-cart td {
+        background-color: #f4f4f4;
+      }
+
+      .shopping-cart tr:nth-child(even) td {
+        background-color: #e9e9e9;
+      }
+
+      #sub-total {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      #shopping-cart-actions {
+        list-style-type: none;
+        display: flex;
+        justify-content: space-between;
+        padding: 0;
+      }
+
+      #shopping-cart-actions li {
+        display: inline-block;
+      }
+
+      .btn {
+        background-color: #454b63;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+      }
+
+      .btn:hover {
+        background-color: #333;
+      }
+
+      #empty-cart {
+        background-color: rgb(210, 127, 127);
+      }
+
+      #empty-cart:hover {
+        background-color: darkred;
+      }
+
+      footer#site-info {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 14px;
+        color: #aaa;
+      }
+
+      footer#site-info a {
+        color: #454b63;
+        text-decoration: none;
+      }
+
+      footer#site-info a:hover {
+        text-decoration: underline;
+      }
+    </style>
+    <script
+      type="text/javascript"
+      src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"
+    ></script>
+    <script type="text/javascript" src="jquery.store.js"></script>
+  </head>
+
+  <body>
+    <div id="site">
+      <header id="masthead">
+        <h1>Your Shopping Cart</h1>
+      </header>
+      <div id="content">
+        <h1>Your Shopping Cart</h1>
+       <form id="shopping-cart" action="input.html" method="post">
+  <table class="shopping-cart">
+    <thead>
+      <tr>
+        <th scope="col">Item</th>
+        <th scope="col">Qty</th>
+        <th scope="col" colspan="2">Price</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <p id="sub-total">
+    <strong>Sub Total</strong>: <span id="stotal"></span>
+  </p>
+  <ul id="shopping-cart-actions">
+    <li>
+      <input type="submit" name="update" id="update-cart" class="btn" value="Update Cart" />
+    </li>
+    <li>
+      <input type="submit" name="delete" id="empty-cart" class="btn" value="Empty Cart" />
+    </li>
+    <li>
+      <a href="index.html" class="btn">Continue Shopping</a>
+    </li>
+    <li>
+      <a href="checkout.html" class="btn">Go To Checkout</a>
+    </li>
+  </ul>
+</form>
+
+      </div>
+    </div>
+
+    <script>document.addEventListener('DOMContentLoaded', function() {
+  // Ambil data keranjang dari localStorage
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  
+  // Ambil elemen tabel dan subtotal
+  const cartTableBody = document.querySelector('.shopping-cart tbody');
+  const subTotalElement = document.getElementById('stotal');
+  const emptyCartButton = document.getElementById('empty-cart');
+
+  // Fungsi untuk mengupdate tampilan keranjang dan subtotal
+  function updateCartDisplay() {
+    // Kosongkan tabel
+    cartTableBody.innerHTML = '';
+    // Inisialisasi subtotal
+    let subTotal = 0;
+
+    // Periksa jika keranjang kosong
+    if (cart.length === 0) {
+      cartTableBody.innerHTML = '<tr><td colspan="4">Your cart is empty.</td></tr>';
+      subTotalElement.textContent = '€0.00';
+      return;
+    }
+
+    // Loop melalui produk di keranjang dan tambahkan ke tabel
+    cart.forEach(item => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${item.name}</td>
+        <td>${item.qty}</td>
+        <td>€${(item.price * item.qty).toFixed(2)}</td>
+      `;
+      cartTableBody.appendChild(row);
+      subTotal += item.price * item.qty;
+    });
+
+    // Menampilkan subtotal
+    subTotalElement.textContent = `€${subTotal.toFixed(2)}`;
+  }
+
+  // Inisialisasi tampilan keranjang saat pertama kali dimuat
+  updateCartDisplay();
+
+  // Fungsi untuk mengosongkan keranjang saat tombol "Empty Cart" diklik
+  emptyCartButton.addEventListener('click', function(e) {
+    e.preventDefault(); // Mencegah form submit
+    localStorage.removeItem('cart'); // Menghapus data keranjang di localStorage
+    cart = []; // Mengosongkan array keranjang
+    updateCartDisplay(); // Memperbarui tampilan keranjang dan subtotal
+  });
+});
+
+</script>
+  </body>
+</html>
